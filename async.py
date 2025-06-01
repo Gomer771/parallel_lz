@@ -1,16 +1,17 @@
-import asyncio
+import threading
+import time
 
-async def timer_task(duration):
-    await asyncio.sleep(duration)  # приостанавливает выполнение задачи, но позволяет другим задачам выполняться параллельно
+def timer(duration):
+    time.sleep(duration) #приостанавливает выполнение 
     print("Задача завершена")
 
-async def main():
-    delay = int(input("Введите количество секунд: "))  # запрашиваем время
-    try:
-        async with asyncio.timeout(3):  # устанавливаем тайм-аут выполнения задачи
-            await timer_task(delay)
-    except TimeoutError:
-        print("Превышено время ожидания!")
+def run(func, args=(), timeout=3): #максимальное время ожидания выполнения потока (3 сек.)
+    thread = threading.Thread(target=func, args=args) #создаём новый поток
+    thread.start() #запускаем поток
+    thread.join(timeout) #ожидаем завершения потока
+    if thread.is_alive(): #проверяем работает ли поток после истечения времени
+        print("Превышено время ожидания")
+        thread.join() 
 
-if __name__ == "__main__":
-    asyncio.run(main())  
+time = int(input("Введите количество секунд: ")) #запрашиваем время
+run(timer, args=(time,), timeout=3)
